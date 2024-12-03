@@ -19,7 +19,15 @@ function TimeDisplay({ location }) {
 
     return (
         <div className="text-center">
-            <h2 className="text-5xl font-bold">{time || '--:-- --'}</h2>
+            <h2 className="text-5xl font-bold mb-2">{time || '--:-- --'}</h2>
+            {location.temperature !== null && (
+            <p className="text-2xl">
+                {location.temperature}°C
+                {location.weatherDescription && (
+                <span className="ml-2 text-lg">{location.weatherDescription}</span>
+                )}
+            </p>
+            )}
         </div>
     );
 }
