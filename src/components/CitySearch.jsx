@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-
+import { fetchLocationInfo } from '../utils/locationUtils';
 function CitySearch({ onLocationSelect }) {
     const [query, setQuery] = useState('');
     const [suggestions, setSuggestions] = useState([]);
@@ -51,39 +51,8 @@ function CitySearch({ onLocationSelect }) {
     setIsLoading(true);
     setError('');
     try {
-        const [timezoneResponse, wikiResponse, weatherResponse] = await Promise.all([
-        fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${import.meta.env.VITE_TIMEZONEDB_API_KEY}&format=json&by=position&lat=${city.latitude}&lng=${city.longitude}`),
-        fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(city.name)}`),
-        fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${city.latitude}&lon=${city.longitude}&units=metric&appid=${import.meta.env.VITE_OPENWEATHER_API_KEY}`)
-        ]);
-
-        if (!timezoneResponse.ok || !weatherResponse.ok) {
-        throw new Error('Failed to fetch timezone or weather data');
-        }
-
-        const [timezoneData, weatherData] = await Promise.all([
-        timezoneResponse.json(),
-        weatherResponse.json()
-        ]);
-
-        let description = '';
-
-        if (wikiResponse.ok) {
-        const wikiData = await wikiResponse.json();
-        description = wikiData.extract;
-        }
-
-        onLocationSelect({
-        name: city.name,
-        country: city.country,
-        latitude: city.latitude,
-        longitude: city.longitude,
-        timezone: timezoneData.zoneName,
-        temperature: Math.round(weatherData.main.temp),
-        weatherDescription: weatherData.weather[0].description,
-        description: description
-        });
-
+        const locationInfo = await fetchLocationInfo(city.latitude, city.longitude);
+        onLocationSelect(locationInfo);
         setQuery('');
         setSuggestions([]);
     } catch (error) {

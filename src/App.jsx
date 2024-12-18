@@ -3,6 +3,7 @@ import Map from './components/Map';
 import CitySearch from './components/CitySearch';
 import TimeDisplay from './components/TimeDisplay';
 import 'leaflet/dist/leaflet.css';
+import {fetchLocationInfo} from './utils/locationUtils';
 
 function App() {
   const [selectedLocation, setSelectedLocation] = useState({
@@ -19,14 +20,23 @@ function App() {
   const handleLocationSelect = (location) => {
     setSelectedLocation(location);
   };
-
+  const handleMapClick = async (latlng) => {
+    try {
+      const locationInfo = await fetchLocationInfo(latlng.lat, latlng.lng);
+      setSelectedLocation(locationInfo);
+    } catch (error) {
+      console.error('Error fetching location info:', error);
+      alert('Failed to get location information. Please try again.');
+    }
+  };
   return (
     <div className="flex flex-col h-screen">
       <h1 className="text-3xl font-bold p-4 bg-gray-100">What's the Time In?</h1>
-      <div className="flex-grow relative" style={{ height: '60vh' }}>
+      <div className="flex-grow relative">
         <Map 
           center={[selectedLocation.latitude || 0, selectedLocation.longitude || 0]} 
           marker={selectedLocation}
+          onMapClick={handleMapClick}
         />
       </div>
       <div className="bg-white p-10 shadow-md" style={{ height: '30vh', overflowY: 'auto' }}>
@@ -39,6 +49,12 @@ function App() {
                 <h2 className="text-xl font-semibold mb-2">{selectedLocation.name}, {selectedLocation.country}</h2>
                 {selectedLocation.description && (
                   <p className="text-sm text-gray-600 mb-2">{selectedLocation.description}</p>
+                )}
+                {selectedLocation.weatherDescription && (
+                  <p className='text-sm text-gray-600 mb-2'>Weather: {selectedLocation.weatherDescription}</p>
+                )}
+                {selectedLocation.temperature !== null && (
+                  <p className="text-sm text-gray-600 mb-2">Temperature: {selectedLocation.temperature}°C</p>
                 )}
               </>
             ) : (
